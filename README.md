@@ -16,7 +16,14 @@ Before you begin, ensure you have the following installed on your system:
 
 ## Installation & Setup
 
-1. **Create and activate a virtual environment** (recommended)
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/ray-sachin/parking_app.git
+   cd parking_app
+   ```
+
+2. **Create and activate a virtual environment** (recommended)
 
    ```bash
    python -m venv venv
@@ -24,13 +31,13 @@ Before you begin, ensure you have the following installed on your system:
    venv\Scripts\activate.bat    # On Windows
    ```
 
-2. **Install dependencies**
+3. **Install dependencies**
 
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Configuration**
+4. **Configuration**
 
    - Copy the example configuration file if provided, or set environment variables:
 
