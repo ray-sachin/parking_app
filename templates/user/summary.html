@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}Summary - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-chart-pie me-2"></i>Parking Summary</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card bg-light mb-3">
+            <div class="card-body text-center">
+                <h6 class="card-title text-muted">Total Reservations</h6>
+                <h1 class="display-4 mb-0 fw-bold">{{ total_reservations }}</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-light mb-3">
+            <div class="card-body text-center">
+                <h6 class="card-title text-muted">Total Spending</h6>
+                <h1 class="display-4 mb-0 fw-bold text-danger">₹{{ total_spending|round(3) }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Monthly Parking Activity</h5>
+            </div>
+            <div class="card-body" style="height: 300px;">
+                <canvas id="monthlyActivityChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Favorite Parking Lots</h5>
+            </div>
+            <div class="card-body" style="height: 300px;">
+                <canvas id="favoriteLotChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Your Parking Stats</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
+                                <h5>First Reservation</h5>
+                                <p class="small">
+                                    {% if months %}
+                                        {{ months[0] }}
+                                    {% else %}
+                                        No reservations yet
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="fas fa-star fa-3x text-primary mb-3"></i>
+                                <h5>Most Visited</h5>
+                                <p class="small">
+                                    {% if lot_names %}
+                                        {{ lot_names[0] }}
+                                    {% else %}
+                                        No favorite spots yet
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="fas fa-money-bill-wave fa-3x text-primary mb-3"></i>
+                                <h5>Average Cost</h5>
+                                <p class="small">
+                                    {% set ns = namespace(total_cost=0, total_count=0) %}
+                                    {% for cost in costs %}
+                                        {% set ns.total_cost = ns.total_cost + cost %}
+                                    {% endfor %}
+                                    {% for count in counts %}
+                                        {% set ns.total_count = ns.total_count + count %}
+                                    {% endfor %}
+                                                                    
+                                    {% if ns.total_count > 0 %}
+                                        ₹{{ (ns.total_cost / ns.total_count)|round(2) }} per parking
+                                    {% else %}
+                                        No data available
+                                    {% endif %}
+                                                                    
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const monthlyCtx = document.getElementById('monthlyActivityChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ months|tojson }},
+                datasets: [
+                    {
+                        label: 'Number of Reservations',
+                        data: {{ counts|tojson }},
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Total Cost (₹)',
+                        data: {{ costs|tojson }},
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        type: 'line',
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Number of Reservations'
+                        }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Cost (₹)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                }
+            }
+        });
+
+        const lotCtx = document.getElementById('favoriteLotChart').getContext('2d');
+        new Chart(lotCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ lot_names|tojson }},
+                datasets: [{
+                    data: {{ lot_counts|tojson }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

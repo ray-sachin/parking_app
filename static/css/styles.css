@@ -1,0 +1,169 @@
+/* Custom styles for Vehicle Parking System */
+
+/* Global styles */
+body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+/* Card styles */
+.card {
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-top-left-radius: 0.5rem !important;
+    border-top-right-radius: 0.5rem !important;
+}
+
+/* Button styles */
+.btn {
+    border-radius: 0.25rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+}
+
+.btn-primary:hover {
+    background-color: #1557b0;
+    border-color: #1557b0;
+}
+
+.btn-danger {
+    background-color: #ea4335;
+    border-color: #ea4335;
+}
+
+.btn-danger:hover {
+    background-color: #d33426;
+    border-color: #d33426;
+}
+
+.btn-success {
+    background-color: #34a853;
+    border-color: #34a853;
+}
+
+.btn-success:hover {
+    background-color: #2d9249;
+    border-color: #2d9249;
+}
+
+/* Form styles */
+.form-control:focus, .form-select:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 0.25rem rgba(26, 115, 232, 0.25);
+}
+
+/* Progress bar styles */
+.progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+/* Modal styles */
+.modal-content {
+    border-radius: 0.5rem;
+    border: none;
+}
+
+.modal-header {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+/* Table styles */
+.table th {
+    font-weight: 600;
+}
+
+/* Alert styles */
+.alert {
+    border-radius: 0.5rem;
+}
+
+/* Dashboard cards */
+.card .fa-3x, .card .fa-4x, .card .fa-5x {
+    opacity: 0.8;
+}
+
+/* Pagination */
+.pagination .page-link {
+    color: #1a73e8;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.hero-section {
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* Parking spot visualization */
+.parking-timer {
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    margin-bottom: 15px;
+}
+
+.estimated-cost {
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #fff8f8;
+}
+
+/* Custom colors */
+.bg-primary {
+    background-color: #1a73e8 !important;
+}
+
+.text-primary {
+    color: #1a73e8 !important;
+}
+
+.bg-success {
+    background-color: #34a853 !important;
+}
+
+.bg-danger {
+    background-color: #ea4335 !important;
+}
+
+.bg-warning {
+    background-color: #fbbc04 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+}

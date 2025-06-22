@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}User Dashboard - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-tachometer-alt me-2"></i>Welcome, {{ current_user.name }}</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if not active_reservation %}
+            <a href="{{ url_for('user.reserve') }}" class="btn btn-primary">
+                <i class="fas fa-car me-2"></i>Reserve a Spot
+            </a>
+        {% else %}
+            <a href="{{ url_for('user.release') }}" class="btn btn-danger">
+                <i class="fas fa-parking me-2"></i>Release Spot
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if active_reservation %}
+    <div class="card border-primary mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-car me-2"></i>Active Reservation</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    {% set spot = active_reservation.parking_spot %}
+                    {% set lot = spot.parking_lot %}
+                    <h4>{{ lot.name }}</h4>
+                    <p><i class="fas fa-map-marker-alt me-2 text-danger"></i>{{ lot.address }}, {{ lot.pin_code }}</p>
+                    <p><i class="fas fa-car me-2 text-primary"></i>Vehicle: {{ active_reservation.vehicle_number }}</p>
+                    <p><i class="fas fa-parking me-2 text-success"></i>Spot #{{ spot.spot_number }}</p>
+                    <p><i class="fas fa-clock me-2 text-secondary"></i>Parked at: {{ active_reservation.parking_time_ist.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p><i class="fas fa-money-bill-wave me-2 text-success"></i>Rate: ₹{{ lot.price }}/hour</p>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('user.release') }}" class="btn btn-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Release Spot
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="parking-timer mb-3">
+                        <h6>Time Elapsed</h6>
+                        <div class="display-6 mb-2" id="timer">00:00:00</div>
+                        <p class="text-muted">hh:mm:ss</p>
+                    </div>
+                    <div class="estimated-cost">
+                        <h6>Estimated Cost</h6>
+                        <h3 class="text-danger" id="cost">₹0.00</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        You don't have any active reservations. Reserve a parking spot now!
+    </div>
+    
+    {% if available_lots %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-building me-2"></i>Available Parking Lots</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for lot in available_lots %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ lot.name }}</h5>
+                                <p class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-2 text-danger"></i>{{ lot.address }}
+                                </p>
+                                <p class="text-muted">
+                                    <i class="fas fa-map-pin me-2 text-secondary"></i>PIN: {{ lot.pin_code }}
+                                </p>
+                                <p>
+                                    <span class="badge bg-success">{{ lot.count_available_spots() }} spots available</span>
+                                </p>
+                                <p class="text-primary fw-bold">
+                                    <i class="fas fa-money-bill-wave me-2"></i>₹{{ lot.price }}/hour
+                                </p>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a href="{{ url_for('user.reserve') }}" class="btn btn-primary">
+                                    <i class="fas fa-car me-2"></i>Reserve Here
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning mb-4">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            No parking lots with available spots found at the moment.
+        </div>
+    {% endif %}
+{% endif %}
+
+{% if recent_reservations %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Reservations</h5>
+            <a href="{{ url_for('user.history') }}" class="btn btn-sm btn-primary">View All</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Vehicle</th>
+                        <th>Duration</th>
+                        <th>Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in recent_reservations %}
+                    <tr>
+                        <td>{{ res.parking_time_ist.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            {% set spot = res.parking_spot %}
+                            {% set lot = spot.parking_lot %}
+                            {{ lot.name }}
+                        </td>
+                        <td>{{ res.vehicle_number }}</td>
+                        <td>
+                            {% if res.leaving_time %}
+                                {% set duration = (res.leaving_time - res.parking_time).total_seconds() // 60 %}
+                                {% if duration < 60 %}
+                                    {{ duration }} mins
+                                {% else %}
+                                    {{ (duration // 60) }} hrs {{ (duration % 60) }} mins
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if res.parking_cost %}
+                                ₹{{ res.parking_cost }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if active_reservation %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set the date we're counting from
+        const parkingTime = new Date('{{ active_reservation.parking_time.isoformat() }}Z');
+        const hourlyRate = {{ active_reservation.parking_spot.parking_lot.price }};
+        const timerElement = document.getElementById('timer');
+        const costElement = document.getElementById('cost');
+        
+        function updateTimer() {
+            // Get current time
+            const now = new Date();
+            
+            // Find the difference between now and the parking time
+            const diff = now - parkingTime;
+            
+            // Time calculations for hours, minutes and seconds
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // Add leading zeros if needed
+            const displayHours = hours.toString().padStart(2, '0');
+            const displayMinutes = minutes.toString().padStart(2, '0');
+            const displaySeconds = seconds.toString().padStart(2, '0');
+            
+            // Display the result
+            timerElement.textContent = `${displayHours}:${displayMinutes}:${displaySeconds}`;
+            
+            // Calculate cost
+            const hoursDecimal = diff / (1000 * 60 * 60);
+            const cost = hoursDecimal * hourlyRate;
+            costElement.textContent = `₹${cost.toFixed(2)}`;
+        }
+        
+        // Update the timer every second
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    });
+</script>
+{% endif %}
+{% endblock %}

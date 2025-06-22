@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-building me-2"></i>{{ title }}</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('admin.parking_lots') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Parking Lots
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow">
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control") }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.name.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.price.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                {{ form.price(class="form-control") }}
+                            </div>
+                            {% if form.price.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.price.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.address.label(class="form-label") }}
+                        {{ form.address(class="form-control") }}
+                        {% if form.address.errors %}
+                            <div class="text-danger">
+                                {% for error in form.address.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.pin_code.label(class="form-label") }}
+                            {{ form.pin_code(class="form-control") }}
+                            {% if form.pin_code.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.pin_code.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.max_spots.label(class="form-label") }}
+                            {{ form.max_spots(class="form-control") }}
+                            {% if form.max_spots.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.max_spots.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>{{ form.submit.label.text }}
+                        </button>
+                        <a href="{{ url_for('admin.parking_lots') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

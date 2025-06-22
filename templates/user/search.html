@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Parking Lots - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2><i class="fas fa-search me-2"></i>Search Parking Lots</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow">
+            <div class="card-body">
+                <form action="{{ url_for('user.search') }}" method="GET">
+                    <div class="input-group input-group-lg mb-3">
+                        <input type="text" name="query" class="form-control" placeholder="Search by location, address, PIN code...">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                    <div class="text-muted small">
+                        <p class="mb-0">You can search by:</p>
+                        <ul>
+                            <li>Parking lot name</li>
+                            <li>Address</li>
+                            <li>PIN code</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-body text-center py-4">
+                            <i class="fas fa-map-marker-alt fa-4x text-danger mb-3"></i>
+                            <h5>Looking for a specific location?</h5>
+                            <p>Find parking lots near your destination.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-body text-center py-4">
+                            <i class="fas fa-car fa-4x text-primary mb-3"></i>
+                            <h5>Ready to park?</h5>
+                            <p>Find an available spot and reserve it now.</p>
+                            <a href="{{ url_for('user.reserve') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-parking me-2"></i>Reserve a Spot
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

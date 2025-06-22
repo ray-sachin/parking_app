@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Users - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-users me-2"></i>Registered Users</h2>
+    </div>
+    <div class="col-md-4">
+        <div class="input-group">
+            <input type="text" id="userSearch" class="form-control" placeholder="Search users...">
+            <button class="btn btn-outline-secondary" type="button">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+{% if users %}
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="usersTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>PIN Code</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.address }}</td>
+                            <td>{{ user.pin_code }}</td>
+                            <td>{{ user.created_at_ist.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#userDetailModal{{ user.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {# Modals should be outside the table for valid HTML #}
+    {% for user in users %}
+    <div class="modal fade" id="userDetailModal{{ user.id }}" tabindex="-1" aria-labelledby="userDetailLabel{{ user.id }}" role="dialog" aria-modal="true" data-bs-focus="false"$1>
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userDetailLabel{{ user.id }}">User Details - {{ user.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Personal Information</h6>
+                            <table class="table">
+                                <tr><th>ID</th><td>{{ user.id }}</td></tr>
+                                <tr><th>Name</th><td>{{ user.name }}</td></tr>
+                                <tr><th>Email</th><td>{{ user.email }}</td></tr>
+                                <tr><th>Address</th><td>{{ user.address }}</td></tr>
+                                <tr><th>PIN Code</th><td>{{ user.pin_code }}</td></tr>
+                                <tr><th>Joined</th><td>{{ user.created_at_ist.strftime('%d/%m/%Y %H:%M') }}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Parking Information</h6>
+                            <div class="reservation-stats">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0">
+                                        <div class="bg-primary rounded-circle p-3 text-white">
+                                            <i class="fas fa-history"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-0">Total Reservations</h6>
+                                        <p class="fs-4 mb-0">{{ user.reservations|length }}</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0">
+                                        <div class="bg-success rounded-circle p-3 text-white">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-0">Completed Reservations</h6>
+                                        <p class="fs-4 mb-0">{{ user.reservations|selectattr('is_active', 'equalto', false)|list|length }}</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="bg-warning rounded-circle p-3 text-white">
+                                            <i class="fas fa-car"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-0">Active Reservations</h6>
+                                        <p class="fs-4 mb-0">{{ user.reservations|selectattr('is_active', 'equalto', true)|list|length }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Recent Reservations</h6>
+                            {% set sorted_reservations = user.reservations | sort(attribute='parking_time', reverse=true) %}
+                            {% set recent_reservations = sorted_reservations[:] %}
+                            {% if recent_reservations %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Vehicle</th>
+                                                <th>Parking Time</th>
+                                                <th>Leaving Time</th>
+                                                <th>Cost</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for res in recent_reservations %}
+                                            <tr>
+                                                <td>{{ res.id }}</td>
+                                                <td>{{ res.vehicle_number }}</td>
+                                                <td>{{ res.parking_time_ist.strftime('%d/%m/%Y %H:%M') }}</td>
+                                                <td>{% if res.leaving_time %}{{ res.leaving_time_ist.strftime('%d/%m/%Y %H:%M') }}{% else %}-{% endif %}</td>
+                                                <td>{% if res.parking_cost %}₹{{ res.parking_cost }}{% else %}-{% endif %}</td>
+                                                <td>
+                                                    {% if res.is_active %}
+                                                        <span class="badge bg-success">Active</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Completed</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No reservations found for this user.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        No registered users found.
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('userSearch');
+        const rows = document.querySelectorAll('#usersTable tbody > tr');
+        searchInput.addEventListener('keyup', function() {
+            const query = this.value.toLowerCase();
+            rows.forEach(row => {
+                const match = Array.from(row.cells).some(cell => cell.textContent.toLowerCase().includes(query));
+                row.style.display = match ? '' : 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}

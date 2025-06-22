@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Parking Lots - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-building me-2"></i>Parking Lots</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('admin.new_parking_lot') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add New Parking Lot
+        </a>
+    </div>
+</div>
+
+{% if lots %}
+    <div class="row">
+        {% for lot in lots %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ lot.name }}</h5>
+                    <span class="badge bg-primary">₹{{ lot.price }}/hr</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p><i class="fas fa-map-marker-alt me-2 text-danger"></i>{{ lot.address }}</p>
+                        <p><i class="fas fa-map-pin me-2 text-secondary"></i>PIN: {{ lot.pin_code }}</p>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 25px;">
+                        {% set available = lot.count_available_spots() %}
+                        {% set occupied = lot.count_occupied_spots() %}
+                        {% set available_percent = (available / lot.max_spots) * 100 %}
+                        {% set occupied_percent = (occupied / lot.max_spots) * 100 %}
+                        
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ available_percent }}%" 
+                             aria-valuenow="{{ available }}" aria-valuemin="0" aria-valuemax="{{ lot.max_spots }}">
+                            {{ available }} Available
+                        </div>
+                        <div class="progress-bar bg-danger" role="progressbar" 
+                             style="width: {{ occupied_percent }}%" 
+                             aria-valuenow="{{ occupied }}" aria-valuemin="0" aria-valuemax="{{ lot.max_spots }}">
+                            {{ occupied }} Occupied
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="border rounded p-2">
+                                <h6 class="mb-0">Total</h6>
+                                <h4>{{ lot.max_spots }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-2 bg-success bg-opacity-10">
+                                <h6 class="mb-0">Available</h6>
+                                <h4>{{ available }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-2 bg-danger bg-opacity-10">
+                                <h6 class="mb-0">Occupied</h6>
+                                <h4>{{ occupied }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex justify-content-between">
+                    <div>
+                        <a href="{{ url_for('admin.parking_spots', lot_id=lot.id) }}" class="btn btn-info">
+                            <i class="fas fa-eye me-1"></i>View Spots
+                        </a>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('admin.edit_parking_lot', lot_id=lot.id) }}" class="btn btn-warning me-2">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </a>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ lot.id }}">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Modal -->
+        <div class="modal fade" id="deleteModal{{ lot.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ lot.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel{{ lot.id }}">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete the parking lot <strong>{{ lot.name }}</strong>?</p>
+                        <p class="text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            This action cannot be undone. All parking spots in this lot will be deleted.
+                        </p>
+                        {% if lot.count_occupied_spots() > 0 %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                This lot has occupied spots. You cannot delete it until all spots are vacated.
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form action="{{ url_for('admin.delete_parking_lot', lot_id=lot.id) }}" method="POST">
+                            <button type="submit" class="btn btn-danger" {% if lot.count_occupied_spots() > 0 %}disabled{% endif %}>
+                                Delete Parking Lot
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        No parking lots found. Click "Add New Parking Lot" to create one.
+    </div>
+{% endif %}
+{% endblock %}

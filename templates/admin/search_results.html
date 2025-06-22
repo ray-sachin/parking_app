@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-search me-2"></i>Search Results</h2>
+        <p class="text-muted">Results for: "{{ query }}"</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('admin.search') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>New Search
+        </a>
+    </div>
+</div>
+
+{% if not lots and not users %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        No results found for "{{ query }}". Try a different search term.
+    </div>
+{% endif %}
+
+{% if lots %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-building me-2"></i>Parking Lots ({{ lots|length }})</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Price/Hour</th>
+                            <th>Address</th>
+                            <th>PIN Code</th>
+                            <th>Spots</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lot in lots %}
+                        <tr>
+                            <td>{{ lot.id }}</td>
+                            <td>{{ lot.name }}</td>
+                            <td>₹{{ lot.price }}</td>
+                            <td>{{ lot.address }}</td>
+                            <td>{{ lot.pin_code }}</td>
+                            <td>{{ lot.max_spots }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.parking_spots', lot_id=lot.id) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('admin.edit_parking_lot', lot_id=lot.id) }}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% if users %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Users ({{ users|length }})</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>PIN Code</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.address }}</td>
+                            <td>{{ user.pin_code }}</td>
+                            <td>{{ user.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#userDetailModal{{ user.id }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        
+                        <!-- User Detail Modal -->
+                        <div class="modal fade" id="userDetailModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">User Details - {{ user.name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Personal Information</h6>
+                                                <table class="table">
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <td>{{ user.id }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <td>{{ user.name }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Email</th>
+                                                        <td>{{ user.email }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Address</th>
+                                                        <td>{{ user.address }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>PIN Code</th>
+                                                        <td>{{ user.pin_code }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Joined</th>
+                                                        <td>{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Parking Information</h6>
+                                                <div class="reservation-stats">
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <div class="flex-shrink-0">
+                                                            <div class="bg-primary rounded-circle p-3 text-white">
+                                                                <i class="fas fa-history"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex-grow-1 ms-3">
+                                                            <h6 class="mb-0">Total Reservations</h6>
+                                                            <p class="fs-4 mb-0">{{ user.reservations|length }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <div class="flex-shrink-0">
+                                                            <div class="bg-success rounded-circle p-3 text-white">
+                                                                <i class="fas fa-check"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex-grow-1 ms-3">
+                                                            <h6 class="mb-0">Completed Reservations</h6>
+                                                            <p class="fs-4 mb-0">{{ user.reservations|selectattr('is_active', 'equalto', false)|list|length }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="flex-shrink-0">
+                                                            <div class="bg-danger rounded-circle p-3 text-white">
+                                                                <i class="fas fa-car"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex-grow-1 ms-3">
+                                                            <h6 class="mb-0">Active Reservations</h6>
+                                                            <p class="fs-4 mb-0">{{ user.reservations|selectattr('is_active', 'equalto', true)|list|length }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
