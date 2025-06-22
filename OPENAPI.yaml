@@ -1,0 +1,807 @@
+openapi: 3.0.0
+info:
+  title: Vehicle Parking Management API
+  version: 1.0.0
+  description: "API for the Parking Management application. This API allows users to register, log in, reserve parking spots, release reservations, and view parking statistics. Admin users can manage parking lots and view system-wide statistics."
+servers:
+  - url: http://localhost:5000
+paths:
+  /login:
+    get:
+      summary: "Login Page"
+      description: "Renders the login page for user authentication."
+      responses:
+        '200':
+          description: "Login page returned successfully."
+    post:
+      summary: "User Login"
+      description: "Authenticate user with email and password."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                remember:
+                  type: boolean
+              required:
+                - email
+                - password
+            example:
+              email: "user@example.com"
+              password: "password123"
+              remember: true
+      responses:
+        '200':
+          description: "Invalid credentials (login page returned with error)."
+        '302':
+          description: "Login successful; redirects to dashboard."
+        '403':
+          description: "Unauthorized (already logged in or forbidden)."
+  /register:
+    get:
+      summary: "Registration Page"
+      description: "Renders the user registration page."
+      responses:
+        '200':
+          description: "Registration page returned successfully."
+    post:
+      summary: "User Registration"
+      description: "Create a new user account."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                confirm_password:
+                  type: string
+                address:
+                  type: string
+                pin_code:
+                  type: string
+              required:
+                - name
+                - email
+                - password
+                - confirm_password
+                - address
+                - pin_code
+            example:
+              name: "John Doe"
+              email: "john@example.com"
+              password: "password123"
+              confirm_password: "password123"
+              address: "123 Main St"
+              pin_code: "123456"
+      responses:
+        '200':
+          description: "Registration failed (validation errors)."
+        '302':
+          description: "Registration successful; redirects to login."
+        '400':
+          description: "Bad Request (email already registered or validation error)."
+  /logout:
+    get:
+      summary: "User Logout"
+      description: "Logs out the current user."
+      security:
+        - cookieAuth: []
+      responses:
+        '302':
+          description: "Logout successful; redirects to home page."
+        '401':
+          description: "Unauthorized (user not logged in)."
+  /user/dashboard:
+    get:
+      summary: "User Dashboard"
+      description: "Displays the user's dashboard with active reservation and recent activity."
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "User dashboard data returned successfully."
+        '401':
+          description: "Unauthorized (user not authenticated)."
+  /user/reserve:
+    get:
+      summary: "Get Reservation Form"
+      description: "Retrieve the form for reserving a parking spot."
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "Reservation form returned successfully."
+        '401':
+          description: "Unauthorized (user not authenticated)."
+    post:
+      summary: "Reserve Parking Spot"
+      description: "Reserve a parking spot for the current user."
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lot_id:
+                  type: integer
+                vehicle_number:
+                  type: string
+              required:
+                - lot_id
+                - vehicle_number
+            example:
+              lot_id: 1
+              vehicle_number: "KA01AB1234"
+      responses:
+        '200':
+          description: "Reservation successful."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  reservation_id:
+                    type: integer
+              example:
+                message: "Parking spot reserved successfully!"
+                reservation_id: 101
+        '400':
+          description: "Bad Request (e.g., no available spots in lot)."
+        '401':
+          description: "Unauthorized (user not authenticated)."
+        '409':
+          description: "Conflict (user already has an active reservation)."
+  /user/release:
+    get:
+      summary: "Get Release Form"
+      description: "Retrieve the form to release an active reservation."
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "Release form returned successfully."
+        '401':
+          description: "Unauthorized (user not authenticated)."
+    post:
+      summary: "Release Parking Spot"
+      description: "Release the user's active parking reservation."
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "Release successful."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  parking_cost:
+                    type: number
+              example:
+                message: "Parking spot released successfully!"
+                parking_cost: 12.5
+        '400':
+          description: "Bad Request (no active reservation to release)."
+        '401':
+          description: "Unauthorized (user not authenticated)."
+  /user/history:
+    get:
+      summary: "Reservation History"
+      description: "Get paginated reservation history for the current user."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: "Page number (for pagination, default 1)."
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: "User reservation history returned successfully."
+        '401':
+          description: "Unauthorized (user not authenticated)."
+  /user/summary:
+    get:
+      summary: "User Summary Statistics"
+      description: "Get summary statistics of the current user's reservations."
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "User summary data returned successfully."
+        '401':
+          description: "Unauthorized (user not authenticated)."
+  /user/search:
+    get:
+      summary: "Search Parking Lots"
+      description: "Search for parking lots by name, address, or PIN code."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: query
+          in: query
+          description: "Search term."
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Search results returned successfully."
+        '401':
+          description: "Unauthorized (user not authenticated)."
+    post:
+      summary: "Search Parking Lots (POST)"
+      description: "Search for parking lots using form submission."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: query
+          in: formData
+          description: "Search term."
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Search results returned successfully."
+        '401':
+          description: "Unauthorized (user not authenticated)."
+  /admin/dashboard:
+    get:
+      summary: "Admin Dashboard"
+      description: "Displays system-wide parking statistics for admins."
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "Admin dashboard data returned successfully."
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /admin/parking-lots:
+    get:
+      summary: "List Parking Lots"
+      description: "Retrieve a list of all parking lots."
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "List of parking lots returned successfully."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    address:
+                      type: string
+                    pin_code:
+                      type: string
+              example:
+                - id: 1
+                  name: "Central Park"
+                  address: "123 Main St"
+                  pin_code: "123456"
+                - id: 2
+                  name: "Downtown Lot"
+                  address: "456 Elm St"
+                  pin_code: "654321"
+        '403':
+          description: "Forbidden (requires admin privileges)."
+    post:
+      summary: "Create Parking Lot"
+      description: "Create a new parking lot with the given details."
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                price:
+                  type: number
+                address:
+                  type: string
+                pin_code:
+                  type: string
+                max_spots:
+                  type: integer
+              required:
+                - name
+                - price
+                - address
+                - pin_code
+                - max_spots
+            example:
+              name: "New Lot"
+              price: 20.0
+              address: "789 Oak Ave"
+              pin_code: "111222"
+              max_spots: 50
+      responses:
+        '201':
+          description: "Parking lot created successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  message:
+                    type: string
+              example:
+                id: 5
+                message: "Parking lot created successfully."
+        '400':
+          description: "Bad Request (invalid input)."
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /admin/parking-lot/{lot_id}/edit:
+    get:
+      summary: "Get Parking Lot for Edit"
+      description: "Retrieve parking lot details for editing."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: lot_id
+          in: path
+          description: "ID of the parking lot to edit."
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Parking lot details returned successfully."
+        '404':
+          description: "Parking lot not found."
+        '403':
+          description: "Forbidden (requires admin privileges)."
+    post:
+      summary: "Update Parking Lot"
+      description: "Update details of an existing parking lot."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: lot_id
+          in: path
+          description: "ID of the parking lot to update."
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                price:
+                  type: number
+                address:
+                  type: string
+                pin_code:
+                  type: string
+                max_spots:
+                  type: integer
+              required:
+                - name
+                - price
+                - address
+                - pin_code
+                - max_spots
+            example:
+              name: "Updated Lot"
+              price: 25.0
+              address: "123 Main St"
+              pin_code: "123456"
+              max_spots: 60
+      responses:
+        '200':
+          description: "Parking lot updated successfully."
+        '400':
+          description: "Bad Request (invalid input or trying to reduce occupied spots)."
+        '404':
+          description: "Parking lot not found."
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /admin/parking-lot/{lot_id}/delete:
+    post:
+      summary: "Delete Parking Lot"
+      description: "Delete an existing parking lot (only if no occupied spots)."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: lot_id
+          in: path
+          description: "ID of the parking lot to delete."
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Parking lot deleted successfully."
+        '400':
+          description: "Bad Request (parking lot has occupied spots)."
+        '404':
+          description: "Parking lot not found."
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /admin/parking-spots/{lot_id}:
+    get:
+      summary: "List Parking Spots"
+      description: "Retrieve all spots for a given parking lot."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: lot_id
+          in: path
+          description: "ID of the parking lot."
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "List of parking spots returned successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lot_id:
+                    type: integer
+                  lot_name:
+                    type: string
+                  spots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        spot_number:
+                          type: integer
+                        status:
+                          type: string
+                        reservation:
+                          type: object
+                example:
+                  lot_id: 1
+                  lot_name: "Central Park"
+                  spots:
+                    - id: 10
+                      spot_number: 1
+                      status: "O"
+                      reservation:
+                        id: 1001
+                        user_id: 5
+                        vehicle_number: "KA01AB1234"
+                    - id: 11
+                      spot_number: 2
+                      status: "A"
+        '404':
+          description: "Parking lot not found."
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /admin/users:
+    get:
+      summary: "List Users"
+      description: "Retrieve list of all non-admin users."
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "List of users returned successfully."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    email:
+                      type: string
+                    address:
+                      type: string
+                    pin_code:
+                      type: string
+              example:
+                - id: 1
+                  name: "Alice Smith"
+                  email: "alice@example.com"
+                  address: "456 Elm St"
+                  pin_code: "654321"
+                - id: 2
+                  name: "Bob Jones"
+                  email: "bob@example.com"
+                  address: "789 Oak Ave"
+                  pin_code: "111222"
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /admin/summary:
+    get:
+      summary: "Admin Summary Statistics"
+      description: "Get overall statistics and revenue data for admin."
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "Admin summary data returned successfully."
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /admin/search:
+    get:
+      summary: "Admin Search"
+      description: "Search parking lots and users (admin)."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: query
+          in: query
+          description: "Search term."
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Search results returned successfully."
+        '403':
+          description: "Forbidden (requires admin privileges)."
+    post:
+      summary: "Admin Search (POST)"
+      description: "Search parking lots and users via form submission."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: query
+          in: formData
+          description: "Search term."
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Search results returned successfully."
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /api/parking-stats:
+    get:
+      summary: "Get Parking Statistics"
+      description: "Get parking statistics for admin dashboard. :contentReference[oaicite:0]{index=0}"
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "Parking statistics returned successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  overall:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      available:
+                        type: integer
+                      occupied:
+                        type: integer
+                      occupancy_rate:
+                        type: number
+                  lots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        total:
+                          type: integer
+                        available:
+                          type: integer
+                        occupied:
+                          type: integer
+                        occupancy_rate:
+                          type: number
+              example:
+                overall:
+                  total: 100
+                  available: 80
+                  occupied: 20
+                  occupancy_rate: 20.0
+                lots:
+                  - id: 1
+                    name: "Central Park"
+                    total: 50
+                    available: 40
+                    occupied: 10
+                    occupancy_rate: 20.0
+                  - id: 2
+                    name: "Downtown Lot"
+                    total: 50
+                    available: 40
+                    occupied: 10
+                    occupancy_rate: 20.0
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /api/revenue-stats:
+    get:
+      summary: "Get Revenue Statistics"
+      description: "Get revenue statistics for admin dashboard. :contentReference[oaicite:1]{index=1}"
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: "Revenue statistics returned successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  daily:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                        revenue:
+                          type: number
+                  monthly:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        month:
+                          type: string
+                        revenue:
+                          type: number
+              example:
+                daily:
+                  - date: "2025-06-01"
+                    revenue: 150.0
+                  - date: "2025-06-02"
+                    revenue: 175.0
+                monthly:
+                  - month: "2025-05"
+                    revenue: 1000.0
+                  - month: "2025-04"
+                    revenue: 900.0
+        '403':
+          description: "Forbidden (requires admin privileges)."
+  /api/user-stats/{user_id}:
+    get:
+      summary: "Get User Statistics"
+      description: "Get parking statistics for a specific user. :contentReference[oaicite:2]{index=2}"
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          description: "ID of the user"
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "User statistics returned successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                  total_reservations:
+                    type: integer
+                  completed_reservations:
+                    type: integer
+                  active_reservations:
+                    type: integer
+                  total_spent:
+                    type: number
+                  avg_duration_hours:
+                    type: number
+              example:
+                user_id: 5
+                total_reservations: 10
+                completed_reservations: 8
+                active_reservations: 2
+                total_spent: 250.0
+                avg_duration_hours: 1.5
+        '403':
+          description: "Forbidden (requires admin or same user)."
+  /api/available-spots/{lot_id}:
+    get:
+      summary: "Get Available Spots"
+      description: "Get available spots for a specific parking lot. :contentReference[oaicite:3]{index=3}"
+      parameters:
+        - name: lot_id
+          in: path
+          description: "ID of the parking lot"
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Available spots returned successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lot_id:
+                    type: integer
+                  lot_name:
+                    type: string
+                  available_spots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        spot_number:
+                          type: integer
+                  total_available:
+                    type: integer
+                  price_per_hour:
+                    type: number
+              example:
+                lot_id: 1
+                lot_name: "Central Park"
+                available_spots:
+                  - id: 11
+                    spot_number: 2
+                  - id: 12
+                    spot_number: 3
+                total_available: 2
+                price_per_hour: 10.0
+        '404':
+          description: "Parking lot not found."
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
