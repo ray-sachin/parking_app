@@ -1,13 +1,150 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vehicle Parking Management System</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            padding: 50px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .features {
+            text-align: left;
+            margin: 30px 0;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        .features h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .features ul {
+            list-style: none;
+        }
+        .features li {
+            padding: 10px 0;
+            color: #555;
+        }
+        .features li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .tech-stack {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .tech-stack h3 {
+            color: #764ba2;
+            margin-bottom: 15px;
+        }
+        .tech-stack p {
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+        .buttons {
+            margin-top: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 5px;
+        }
+        .note strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🚗</div>
+        <h1>Vehicle Parking Management System</h1>
+        <p>A Flask-based web application for managing parking lots, user bookings, and administrative operations with both web frontend and JSON API endpoints.</p>
+        
+        <div class="features">
+            <h2>Features</h2>
+            <ul>
+                <li>User registration and authentication</li>
+                <li>Parking spot reservation system</li>
+                <li>Real-time parking availability tracking</li>
+                <li>Administrative dashboard</li>
+                <li>Booking history and management</li>
+                <li>RESTful API endpoints for integrations</li>
+            </ul>
+        </div>
+        
+        <div class="tech-stack">
+            <h3>Technology Stack</h3>
+            <p><strong>Backend:</strong> Python 3.10+ with Flask framework</p>
+            <p><strong>Frontend:</strong> HTML, CSS with Jinja2 templates</p>
+            <p><strong>Database:</strong> SQLAlchemy ORM</p>
+            <p><strong>API:</strong> RESTful JSON endpoints (see OPENAPI.yaml)</p>
+        </div>
+        
+        <div class="note">
+            <strong>Note:</strong> This is a Flask application that requires a Python backend server to run. It cannot be run as a static website on GitHub Pages. Please follow the installation instructions in the README to run this application locally.
+        </div>
+        
+        <div class="buttons">
+            <a href="https://github.com/ray-sachin/parking_app" class="btn">View on GitHub</a>
+            <a href="https://github.com/ray-sachin/parking_app#readme" class="btn">Read Documentation</a>
+        </div>
+    </div>
+</body>
 </html>
